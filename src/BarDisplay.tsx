@@ -9,6 +9,7 @@ type Config = {
   topicField?: string;
   minValue?: number;
   maxValue?: number;
+  thresholdValue?: number;
   barColorAbove?: string;
   barColorBelow?: string;
   orientation?: 'horizontal' | 'vertical';
@@ -54,6 +55,7 @@ function BarDisplay({ context }: { context: PanelExtensionContext }): JSX.Elemen
       topicField = "",
       minValue = 0,
       maxValue = 100,
+      thresholdValue = 50,
       barColorAbove = "#00ff00",
       barColorBelow = "#00ff00",
       orientation = "horizontal",
@@ -61,7 +63,7 @@ function BarDisplay({ context }: { context: PanelExtensionContext }): JSX.Elemen
       negateValue = false,
     } = partialConfig;
 
-    return { topicField, minValue, maxValue, barColorAbove, barColorBelow, orientation, fillBehavior, negateValue };
+    return { topicField, minValue, maxValue, thresholdValue, barColorAbove, barColorBelow, orientation, fillBehavior, negateValue };
   });
 
   // Parse topic and field from topicField
@@ -164,6 +166,11 @@ function BarDisplay({ context }: { context: PanelExtensionContext }): JSX.Elemen
               label: "Max Value",
               input: "number",
               value: config.maxValue,
+            },
+            thresholdValue:{
+              label: "Threshold Value for switching",
+              input: "number",
+              value: config.thresholdValue,
             },
             barColorAbove: {
               label: "Bar Color above 50%",
@@ -296,11 +303,16 @@ function BarDisplay({ context }: { context: PanelExtensionContext }): JSX.Elemen
     // Clamp behavior (default)
     const normalizedValue = Math.max(0, Math.min(100, ((scalarValue - config.minValue) / range) * 100));
     var colorSigned = config.barColorAbove;
-    if (normalizedValue < 50){
+    if (config.thresholdValue == undefined) {if (normalizedValue < 50){
 	colorSigned = config.barColorBelow;
     } else {
 	colorSigned = config.barColorAbove;
-    }
+    }}else{
+    if (scalarValue < config.thresholdValue){
+	colorSigned = config.barColorBelow;
+    } else {
+	colorSigned = config.barColorAbove;
+    }}
     return { percentage: normalizedValue, displayValue: scalarValue, displayColor: colorSigned};
   }, [scalarValue, config.minValue, config.maxValue, config.fillBehavior]);
 
