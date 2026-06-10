@@ -9,7 +9,8 @@ type Config = {
   topicField?: string;
   minValue?: number;
   maxValue?: number;
-  barColor?: string;
+  barColorAbove?: string;
+  barColorBelow?: string;
   orientation?: 'horizontal' | 'vertical';
   fillBehavior?: 'clamp' | 'ignore';
   negateValue?: boolean;
@@ -53,13 +54,14 @@ function BarDisplay({ context }: { context: PanelExtensionContext }): JSX.Elemen
       topicField = "",
       minValue = 0,
       maxValue = 100,
-      barColor = "#00ff00",
+      barColorAbove = "#00ff00",
+      barColorBelow = "#00ff00",
       orientation = "horizontal",
       fillBehavior = "clamp",
       negateValue = false,
     } = partialConfig;
 
-    return { topicField, minValue, maxValue, barColor, orientation, fillBehavior, negateValue };
+    return { topicField, minValue, maxValue, barColorAbove, barColorBelow, orientation, fillBehavior, negateValue };
   });
 
   // Parse topic and field from topicField
@@ -163,10 +165,15 @@ function BarDisplay({ context }: { context: PanelExtensionContext }): JSX.Elemen
               input: "number",
               value: config.maxValue,
             },
-            barColor: {
-              label: "Bar Color",
+            barColorAbove: {
+              label: "Bar Color above 50%",
               input: "rgb",
-              value: config.barColor,
+              value: config.barColorAbove,
+            },
+            barColorBelow: {
+              label: "Bar Color below 50%",
+              input: "rgb",
+              value: config.barColorBelow,
             },
             orientation: {
               label: "Orientation",
@@ -276,23 +283,23 @@ function BarDisplay({ context }: { context: PanelExtensionContext }): JSX.Elemen
   // Calculate percentage based on min/max values and fill behavior
   const { percentage, displayValue, displayColor } = useMemo(() => {
     if (scalarValue === undefined || config.minValue === undefined || config.maxValue === undefined) {
-      return { percentage: 0, displayValue: undefined, displayColor: config.barColor };
+      return { percentage: 0, displayValue: undefined, displayColor: config.barColorAbove };
     }
     
     const range = config.maxValue - config.minValue;
-    if (range === 0) return { percentage: 0, displayValue: scalarValue, displayColor: config.barColor};
+    if (range === 0) return { percentage: 0, displayValue: scalarValue, displayColor: config.barColorAbove};
     
     const isInRange = scalarValue >= config.minValue && scalarValue <= config.maxValue;
     
     if (config.fillBehavior === 'ignore' && !isInRange) {
-      return { percentage: 0, displayValue: undefined, displayColor: config.barColor };}
+      return { percentage: 0, displayValue: undefined, displayColor: config.barColorAbove };}
     // Clamp behavior (default)
     const normalizedValue = Math.max(0, Math.min(100, ((scalarValue - config.minValue) / range) * 100));
-    var colorSigned = config.barColor;
+    var colorSigned = config.barColorAbove;
     if (normalizedValue < 50){
-	colorSigned = "#ff0000";
+	colorSigned = config.barColorBelow;
     } else {
-	colorSigned = config.barColor;
+	colorSigned = config.barColorAbove;
     }
     return { percentage: normalizedValue, displayValue: scalarValue, displayColor: colorSigned};
   }, [scalarValue, config.minValue, config.maxValue, config.fillBehavior]);
