@@ -274,23 +274,27 @@ function BarDisplay({ context }: { context: PanelExtensionContext }): JSX.Elemen
   }, [renderDone]);
 
   // Calculate percentage based on min/max values and fill behavior
-  const { percentage, displayValue } = useMemo(() => {
+  const { percentage, displayValue, displayColor } = useMemo(() => {
     if (scalarValue === undefined || config.minValue === undefined || config.maxValue === undefined) {
-      return { percentage: 0, displayValue: undefined };
+      return { percentage: 0, displayValue: undefined, displayColor: config.barColor };
     }
     
     const range = config.maxValue - config.minValue;
-    if (range === 0) return { percentage: 0, displayValue: scalarValue };
+    if (range === 0) return { percentage: 0, displayValue: scalarValue, displayColor: config.barColor};
     
     const isInRange = scalarValue >= config.minValue && scalarValue <= config.maxValue;
     
     if (config.fillBehavior === 'ignore' && !isInRange) {
-      return { percentage: 0, displayValue: undefined };
-    }
-    
+      return { percentage: 0, displayValue: undefined, displayColor: config.barColor };}
     // Clamp behavior (default)
     const normalizedValue = Math.max(0, Math.min(100, ((scalarValue - config.minValue) / range) * 100));
-    return { percentage: normalizedValue, displayValue: scalarValue };
+    var colorSigned = config.barColor;
+    if (normalizedValue < 50){
+	colorSigned = "#ff0000";
+    } else {
+	colorSigned = config.barColor;
+    }
+    return { percentage: normalizedValue, displayValue: scalarValue, displayColor: colorSigned};
   }, [scalarValue, config.minValue, config.maxValue, config.fillBehavior]);
 
   return (
@@ -306,7 +310,7 @@ function BarDisplay({ context }: { context: PanelExtensionContext }): JSX.Elemen
     }}>
       <BarLevelIndicator 
         level={percentage} 
-        color={config.barColor || "#00ff00"}
+        color={displayColor || "#00ff00"}
         value={displayValue}
         orientation={config.orientation || "horizontal"}
       />
