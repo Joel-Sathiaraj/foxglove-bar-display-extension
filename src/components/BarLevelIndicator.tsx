@@ -7,7 +7,7 @@ interface BarLevelIndicatorProps {
   orientation?: 'horizontal' | 'vertical';
 }
 
-const BarLevelIndicator: React.FC<BarLevelIndicatorProps> = ({ level, color = "#00ff00", value, orientation = "horizontal" }) => {
+const BarLevelIndicator: React.FC<BarLevelIndicatorProps> = ({ level, color = "#00ff00", value=0, orientation = "horizontal" }) => {
   const barContainerStyle: React.CSSProperties = {
     border: '1px solid gray',
     borderRadius: '5px',
@@ -32,7 +32,7 @@ const BarLevelIndicator: React.FC<BarLevelIndicatorProps> = ({ level, color = "#
     borderRadius: '2.5px',
     position: 'absolute',
     ...(orientation === 'horizontal' ? {
-      left: 0,
+      ... (value < 0 ? {left: '50%'} : {right: '50%'}),
       top: 0,
       width: `${level}%`,
       height: '100%',
@@ -41,7 +41,7 @@ const BarLevelIndicator: React.FC<BarLevelIndicatorProps> = ({ level, color = "#
       justifyContent: 'flex-start',
     } : {
       left: 0,
-      bottom: 0,
+      ... (value < 0 ? {top: '50%'} : {bottom: '50%'}),
       height: `${level}%`,
       width: '100%',
       display: 'flex',

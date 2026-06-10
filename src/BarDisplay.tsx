@@ -289,7 +289,7 @@ function BarDisplay({ context }: { context: PanelExtensionContext }): JSX.Elemen
 
   // Calculate percentage based on min/max values and fill behavior
   const { percentage, displayValue, displayColor } = useMemo(() => {
-    if (scalarValue === undefined || config.minValue === undefined || config.maxValue === undefined) {
+    if (scalarValue === undefined || config.minValue === undefined || config.maxValue === undefined || config.thresholdValue === undefined) {
       return { percentage: 0, displayValue: undefined, displayColor: config.barColorAbove };
     }
     
@@ -301,18 +301,13 @@ function BarDisplay({ context }: { context: PanelExtensionContext }): JSX.Elemen
     if (config.fillBehavior === 'ignore' && !isInRange) {
       return { percentage: 0, displayValue: undefined, displayColor: config.barColorAbove };}
     // Clamp behavior (default)
-    const normalizedValue = Math.max(0, Math.min(100, ((scalarValue - config.minValue) / range) * 100));
+    const normalizedValue = Math.max(-50, Math.min(50, ((scalarValue - config.thresholdValue) / range) * 100));
     var colorSigned = config.barColorAbove;
-    if (config.thresholdValue == undefined) {if (normalizedValue < 50){
-	colorSigned = config.barColorBelow;
-    } else {
-	colorSigned = config.barColorAbove;
-    }}else{
     if (scalarValue < config.thresholdValue){
 	colorSigned = config.barColorBelow;
     } else {
 	colorSigned = config.barColorAbove;
-    }}
+    }
     return { percentage: normalizedValue, displayValue: scalarValue, displayColor: colorSigned};
   }, [scalarValue, config.minValue, config.maxValue, config.fillBehavior]);
 
